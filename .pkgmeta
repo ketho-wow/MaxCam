@@ -1,0 +1,15 @@
+package-as: MaxCam
+
+externals:
+  Libs/LibStub:
+    url: svn://svn.wowace.com/wow/ace3/mainline/trunk/LibStub
+    tag: latest
+  Libs/CallbackHandler-1.0:
+    url: svn://svn.wowace.com/wow/callbackhandler/mainline/trunk/CallbackHandler-1.0
+    tag: latest
+  Libs/AceConfig-3.0:
+    url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceConfig-3.0
+    tag: latest
+  Libs/AceGUI-3.0:
+    url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceGUI-3.0
+    tag: latest
