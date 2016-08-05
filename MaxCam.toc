@@ -1,5 +1,5 @@
 ## Interface: 70000
-## Version: 1.0
+## Version: 1.0.1
 ## Title: MaxCam
 ## Notes: Max Camera
 ## Author: Ketho @ EU-Boulderfist

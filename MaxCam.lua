@@ -1,5 +1,18 @@
 -- License: Public Domain
 
+local build = select(2, GetBuildInfo())
+
+if tonumber(build) >= 22371 then -- Aug  4 2016
+	StaticPopupDialogs.MAXCAM_FIXED = {
+		text = "MaxCam has been hotfixed since build 22371",
+		button1 = OKAY,
+		whileDead = 1, hideOnEscape = 1, showAlert = 1,
+	}
+	StaticPopup_Show("MAXCAM_FIXED")
+	DisableAddOn("MaxCam")
+	return
+end
+
 local NAME, S = ...
 local L = S.L
 

@@ -7,6 +7,7 @@ local L = {
 		ZOOM_SPEED = "Zoom "..SPEED,
 	},
 	deDE = {
+		DISTANCE = "Entfernung",
 		ZOOM_INCREMENT = "Zoomschritt",
 		ZOOM_SPEED = "Zoomgeschwindigkeit",
 	},
