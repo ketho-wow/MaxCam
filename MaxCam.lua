@@ -1,14 +1,8 @@
+-- Author: Ketho (EU-Boulderfist)
 -- License: Public Domain
 
-local build = select(2, GetBuildInfo())
-
-if tonumber(build) >= 22371 then -- Aug  4 2016
-	StaticPopupDialogs.MAXCAM_FIXED = {
-		text = "MaxCam has been hotfixed since build 22371",
-		button1 = OKAY,
-		whileDead = 1, hideOnEscape = 1, showAlert = 1,
-	}
-	StaticPopup_Show("MAXCAM_FIXED")
+if IsAddOnLoaded("FasterCamera") then
+	print("MaxCam is FasterCamera, disabling MaxCam...")
 	DisableAddOn("MaxCam")
 	return
 end
@@ -20,14 +14,47 @@ local ACR = LibStub("AceConfigRegistry-3.0")
 local ACD = LibStub("AceConfigDialog-3.0")
 local db
 
-local GetCameraZoom = GetCameraZoom
-local target, isZoomIn
+-- anything bigger than 1 could be a custom zoom increment from another addon
+-- @param func		the prehooked function to call
+-- @param increment	the increment in yards to zoom
+local function CameraZoom(func, increment)
+	func(increment > 1 and increment or db.increment)
+end
+
+local oldZoomIn = CameraZoomIn
+local oldZoomOut = CameraZoomOut
+
+function CameraZoomIn(v)
+	CameraZoom(oldZoomIn, v)
+end
+
+function CameraZoomOut(v)
+	CameraZoom(oldZoomOut, v)
+end
+
+-- multi-passenger mounts / quest vehicles
+local oldVehicleZoomIn = VehicleCameraZoomIn
+local oldVehicleZoomOut = VehicleCameraZoomOut
+
+function VehicleCameraZoomIn(v)
+	CameraZoom(oldVehicleZoomIn, v)
+end
+
+function VehicleCameraZoomOut(v)
+	CameraZoom(oldVehicleZoomOut, v)
+end
+
+local base = 15
+local maxfactor = 2.6
+
+-- update the Blizzard slider from 1.9 to 2.6
+CameraPanelOptions.cameraDistanceMaxFactor.maxValue = maxfactor
 
 local defaults = {
-	db_version = 1.0,
+	db_version = 2.1,
 	increment = 4,
-	speed = 2,
-	distance = 50,
+	speed = 20,
+	distance = maxfactor,
 }
 
 local options = {
@@ -36,30 +63,34 @@ local options = {
 	args = {
 		group1 = {
 			type = "group", order = 1,
-			name = " ",	
+			name = " ",
 			inline = true,
-			get = function(i) return db[i[#i]] end,
-			set = function(i,v) db[i[#i]] = v end,
 			args = {
 				increment = {
 					type = "range", order = 1,
 					width = "double", descStyle = "",
 					name = L.ZOOM_INCREMENT,
-					min = 1, max = 100, softMax = 10, step = .5,
+					get = function(i) return db.increment end,
+					set = function(i, v) db.increment = v end,
+					min = 1, max = 10, softMax = 5, step = .5,
 				},
 				spacing1 = {type = "description", order = 2, name = "\n"},
 				speed = {
 					type = "range", order = 3,
-					width = "double", descStyle  = "",
+					width = "double", descStyle = "",
 					name = L.ZOOM_SPEED,
-					min = 1, max = 50, softMax = 5, step = .5,
+					get = function(i) return tonumber(GetCVar("cameraDistanceMoveSpeed")) end,
+					set = function(i, v) SetCVar("cameraDistanceMoveSpeed", v); db.speed = v end,
+					min = 1, max = 50, step = 1,
 				},
 				spacing2 = {type = "description", order = 4, name = "\n"},
 				distance = {
 					type = "range", order = 5,
 					width = "double", desc = OPTION_TOOLTIP_MAX_FOLLOW_DIST,
 					name = MAX_FOLLOW_DIST,
-					min = 15, max = 1000, softMax = 50, step = 1,
+					get = function(i) return GetCVar("cameraDistanceMaxFactor") * base end,
+					set = function(i, v) SetCVar("cameraDistanceMaxFactor", v / base); db.distance = v / base end,
+					min = base, max = base * maxfactor, step = 1,
 				},
 			},
 		},
@@ -84,51 +115,46 @@ function f:OnEvent(event, addon)
 		ACD:AddToBlizOptions(NAME, NAME)
 		ACD:SetDefaultSize(NAME, 420, 320)
 		
-		-- cameraDistanceMoveSpeed affects MoveView
-		C_Timer.After(2, function()
-			SetCVar("cameraDistanceMoveSpeed", GetCVarDefault("cameraDistanceMoveSpeed"))
+		hooksecurefunc("BlizzardOptionsPanel_SetupControl", function(control)
+			if control == InterfaceOptionsCameraPanelMaxDistanceSlider then
+				SetCVar("cameraDistanceMaxFactor", db.distance)
+				SetCVar("cameraDistanceMoveSpeed", db.speed)
+			end
+		end)
+		
+		InterfaceOptionsCameraPanelMaxDistanceSlider:HookScript("OnValueChanged", function(self, value)
+			db.distance = value
 		end)
 		
 		self:UnregisterEvent(event)
-		self:SetScript("OnUpdate", f.CameraZoom)
-		self:Hide()
 	end
-end
-
-function f:CameraZoom() -- OnUpdate
-	local zoom = GetCameraZoom()
-	if (isZoomIn and (zoom<target or zoom==0)) or (not isZoomIn and zoom>target) then
-		MoveViewInStop()
-		self:Hide()
-		if ACD.OpenFrames.MaxCam then
-			ACR:NotifyChange(NAME) -- show current distance
-		end
-	end
-end
-
-function CameraZoomIn()
-	target = min(GetCameraZoom()-db.increment, db.distance)
-	MoveViewInStart(db.speed)
-	isZoomIn = true
-	f:Show()
-end
-
-function CameraZoomOut()
-	target = min(GetCameraZoom()+db.increment, db.distance)
-	MoveViewInStart(-db.speed) -- bug
-	isZoomIn = false
-	f:Show()
 end
 
 f:RegisterEvent("ADDON_LOADED")
 f:SetScript("OnEvent", f.OnEvent)
 
+local function ShowDistance()
+	ACR:NotifyChange(NAME) -- hide that initial flicker
+	C_Timer.NewTicker(.5, function(self)
+		if ACD.OpenFrames.MaxCam then
+			if not ACD.OpenFrames.MaxCam.frame:IsMouseOver() and not GetCurrentKeyBoardFocus() then
+				ACR:NotifyChange(NAME)
+			end
+		else
+			self:Cancel()
+		end
+	end)
+end
+
 for i, v in pairs({"mc", "maxcam"}) do
 	_G["SLASH_MAXCAM"..i] = "/"..v
 end
 
-SlashCmdList.MAXCAM = function()
-	ACD:Open(NAME)
+function SlashCmdList.MAXCAM()
+	if not ACD.OpenFrames.MaxCam  then
+		ACD:Open(NAME)
+		ShowDistance()
+	end
 end
 
 local dataobject = {
@@ -136,11 +162,16 @@ local dataobject = {
 	icon = "Interface\\Icons\\inv_misc_spyglass_03",
 	text = NAME,
 	OnClick = function()
-		ACD[ACD.OpenFrames.MaxCam and "Close" or "Open"](ACD, NAME)
+		if ACD.OpenFrames.MaxCam  then
+			ACD:Close(NAME)
+		else
+			ACD:Open(NAME)
+			ShowDistance()
+		end
 	end,
 	OnTooltipShow = function(tt)
 		tt:AddLine("|cffADFF2F"..NAME.."|r")
-		tt:AddDoubleLine(MAX_FOLLOW_DIST, format("%.1f", GetCameraZoom()))
+		tt:AddDoubleLine( MAX_FOLLOW_DIST, format("%.1f", GetCameraZoom()) )
 	end,
 }
 
