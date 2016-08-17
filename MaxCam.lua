@@ -17,31 +17,32 @@ local db
 -- anything bigger than 1 could be a custom zoom increment from another addon
 -- @param func		the prehooked function to call
 -- @param increment	the increment in yards to zoom
-local function CameraZoom(func, increment)
-	func(increment > 1 and increment or db.increment)
+-- @param isCustom	whether another addon is passing a custom increment
+local function CameraZoom(func, increment, isCustom)
+	func(increment > 1 and increment or db.increment, isCustom)
 end
 
 local oldZoomIn = CameraZoomIn
 local oldZoomOut = CameraZoomOut
 
-function CameraZoomIn(v)
-	CameraZoom(oldZoomIn, v)
+function CameraZoomIn(v, b)
+	CameraZoom(oldZoomIn, v, b)
 end
 
-function CameraZoomOut(v)
-	CameraZoom(oldZoomOut, v)
+function CameraZoomOut(v, b)
+	CameraZoom(oldZoomOut, v, b)
 end
 
 -- multi-passenger mounts / quest vehicles
 local oldVehicleZoomIn = VehicleCameraZoomIn
 local oldVehicleZoomOut = VehicleCameraZoomOut
 
-function VehicleCameraZoomIn(v)
-	CameraZoom(oldVehicleZoomIn, v)
+function VehicleCameraZoomIn(v, b)
+	CameraZoom(oldVehicleZoomIn, v, b)
 end
 
-function VehicleCameraZoomOut(v)
-	CameraZoom(oldVehicleZoomOut, v)
+function VehicleCameraZoomOut(v, b)
+	CameraZoom(oldVehicleZoomOut, v, b)
 end
 
 local base = 15
