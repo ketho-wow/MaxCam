@@ -31,10 +31,12 @@ local L = {
 	ruRU = {
 	},
 	zhCN = {
+		DISTANCE = "距离",
 		ZOOM_INCREMENT = "缩放增量",
 		ZOOM_SPEED = "缩放速度",
 	},
 	zhTW = {
+		DISTANCE = "距離",
 		ZOOM_INCREMENT = "縮放增量",
 		ZOOM_SPEED = "縮放速度",
 	},

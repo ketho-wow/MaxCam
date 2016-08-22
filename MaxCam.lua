@@ -1,10 +1,17 @@
 -- Author: Ketho (EU-Boulderfist)
 -- License: Public Domain
 
-if IsAddOnLoaded("FasterCamera") then
-	print("MaxCam is FasterCamera, disabling MaxCam...")
-	DisableAddOn("MaxCam")
-	return
+local disable = {
+	DynamicCam = "DynamicCam is more advanced",
+	FasterCamera = "FasterCamera is MaxCam",
+}
+
+for k, v in pairs(disable) do
+	if IsAddOnLoaded(k) then
+		print(v..", disabling MaxCam...")
+		DisableAddOn("MaxCam")
+		return
+	end
 end
 
 local NAME, S = ...
@@ -17,39 +24,41 @@ local db
 -- anything bigger than 1 could be a custom zoom increment from another addon
 -- @param func		the prehooked function to call
 -- @param increment	the increment in yards to zoom
--- @param isCustom	whether another addon is passing a custom increment
-local function CameraZoom(func, increment, isCustom)
-	func(increment > 1 and increment or db.increment, isCustom)
+local function CameraZoom(func, increment)
+	local isCloseUp = GetCameraZoom() < 4
+	func(increment > 1 and increment or isCloseUp and 2 or db.increment)
 end
 
 local oldZoomIn = CameraZoomIn
 local oldZoomOut = CameraZoomOut
 
-function CameraZoomIn(v, b)
-	CameraZoom(oldZoomIn, v, b)
+function CameraZoomIn(v)
+	CameraZoom(oldZoomIn, v)
 end
 
-function CameraZoomOut(v, b)
-	CameraZoom(oldZoomOut, v, b)
+function CameraZoomOut(v)
+	CameraZoom(oldZoomOut, v)
 end
 
 -- multi-passenger mounts / quest vehicles
 local oldVehicleZoomIn = VehicleCameraZoomIn
 local oldVehicleZoomOut = VehicleCameraZoomOut
 
-function VehicleCameraZoomIn(v, b)
-	CameraZoom(oldVehicleZoomIn, v, b)
+function VehicleCameraZoomIn(v)
+	CameraZoom(oldVehicleZoomIn, v)
 end
 
-function VehicleCameraZoomOut(v, b)
-	CameraZoom(oldVehicleZoomOut, v, b)
+function VehicleCameraZoomOut(v)
+	CameraZoom(oldVehicleZoomOut, v)
 end
 
 local base = 15
 local maxfactor = 2.6
 
--- update the Blizzard slider from 1.9 to 2.6
+-- update the Blizzard slider from 1.9 to 2.6; also prevents clamping the cvar to 1.9
 CameraPanelOptions.cameraDistanceMaxFactor.maxValue = maxfactor
+InterfaceOptionsCameraPanelMaxDistanceSlider.Low:SetText(base) -- Near -> 15
+InterfaceOptionsCameraPanelMaxDistanceSlider.High:SetText(base * maxfactor) -- Far -> 39
 
 local defaults = {
 	db_version = 2.1,
@@ -81,7 +90,7 @@ local options = {
 					width = "double", descStyle = "",
 					name = L.ZOOM_SPEED,
 					get = function(i) return tonumber(GetCVar("cameraDistanceMoveSpeed")) end,
-					set = function(i, v) SetCVar("cameraDistanceMoveSpeed", v); db.speed = v end,
+					set = function(i, v) db.speed = v; SetCVar("cameraDistanceMoveSpeed", v) end,
 					min = 1, max = 50, step = 1,
 				},
 				spacing2 = {type = "description", order = 4, name = "\n"},
@@ -90,8 +99,16 @@ local options = {
 					width = "double", desc = OPTION_TOOLTIP_MAX_FOLLOW_DIST,
 					name = MAX_FOLLOW_DIST,
 					get = function(i) return GetCVar("cameraDistanceMaxFactor") * base end,
-					set = function(i, v) SetCVar("cameraDistanceMaxFactor", v / base); db.distance = v / base end,
-					min = base, max = base * maxfactor, step = 1,
+					set = function(i, v)
+						local value = v / base
+						db.distance = value
+						SetCVar("cameraDistanceMaxFactor", value)
+						-- when using the Blizzard Options window
+						if InterfaceOptionsFrame:IsShown() then
+							InterfaceOptionsCameraPanelMaxDistanceSlider:SetValue(value)
+						end
+					end,
+					min = base, max = base * maxfactor, step = 1.5, -- cameraDistanceMaxFactor gets rounded to 1 decimal
 				},
 			},
 		},
@@ -116,11 +133,11 @@ function f:OnEvent(event, addon)
 		ACD:AddToBlizOptions(NAME, NAME)
 		ACD:SetDefaultSize(NAME, 420, 320)
 		
-		hooksecurefunc("BlizzardOptionsPanel_SetupControl", function(control)
-			if control == InterfaceOptionsCameraPanelMaxDistanceSlider then
-				SetCVar("cameraDistanceMaxFactor", db.distance)
-				SetCVar("cameraDistanceMoveSpeed", db.speed)
-			end
+		C_Timer.After(1, function()
+			-- not actually necessary to override from savedvars
+			-- but better to do this if other addons also set it
+			SetCVar("cameraDistanceMaxFactor", db.distance)
+			SetCVar("cameraDistanceMoveSpeed", db.speed)
 		end)
 		
 		InterfaceOptionsCameraPanelMaxDistanceSlider:HookScript("OnValueChanged", function(self, value)
