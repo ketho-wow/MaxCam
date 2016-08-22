@@ -25,7 +25,7 @@ local db
 -- @param func		the prehooked function to call
 -- @param increment	the increment in yards to zoom
 local function CameraZoom(func, increment)
-	local isCloseUp = GetCameraZoom() < 4
+	local isCloseUp = GetCameraZoom() < 5 and db.increment >= 2
 	func(increment > 1 and increment or isCloseUp and 2 or db.increment)
 end
 
@@ -103,12 +103,12 @@ local options = {
 						local value = v / base
 						db.distance = value
 						SetCVar("cameraDistanceMaxFactor", value)
-						-- when using the Blizzard Options window
 						if InterfaceOptionsFrame:IsShown() then
 							InterfaceOptionsCameraPanelMaxDistanceSlider:SetValue(value)
 						end
 					end,
-					min = base, max = base * maxfactor, step = 1.5, -- cameraDistanceMaxFactor gets rounded to 1 decimal
+					-- cameraDistanceMaxFactor gets rounded to 1 decimal
+					min = base, max = base * maxfactor, step = 1.5,
 				},
 			},
 		},
