@@ -9,7 +9,7 @@ local disable = {
 for k, v in pairs(disable) do
 	if IsAddOnLoaded(k) then
 		print(v..", disabling MaxCam...")
-		DisableAddOn("MaxCam")
+		DisableAddOn("MaxCam", true)
 		return
 	end
 end
@@ -25,7 +25,7 @@ local db
 -- @param func		the prehooked function to call
 -- @param increment	the increment in yards to zoom
 local function CameraZoom(func, increment)
-	local isCloseUp = GetCameraZoom() < 5 and db.increment >= 2
+	local isCloseUp = GetCameraZoom() < 6 and db.increment >= 2
 	func(increment > 1 and increment or isCloseUp and 2 or db.increment)
 end
 
@@ -55,11 +55,6 @@ end
 local base = 15
 local maxfactor = 2.6
 
--- update the Blizzard slider from 1.9 to 2.6; also prevents clamping the cvar to 1.9
-CameraPanelOptions.cameraDistanceMaxFactor.maxValue = maxfactor
-InterfaceOptionsCameraPanelMaxDistanceSlider.Low:SetText(base) -- Near -> 15
-InterfaceOptionsCameraPanelMaxDistanceSlider.High:SetText(base * maxfactor) -- Far -> 39
-
 local defaults = {
 	db_version = 2.1,
 	increment = 4,
@@ -69,7 +64,7 @@ local defaults = {
 
 local options = {
 	type = "group",
-	name = format("%s |cffADFF2Fv%s|r", NAME, GetAddOnMetadata(NAME, "Version")),
+	name = format("%s |cffADFF2F%s|r", NAME, GetAddOnMetadata(NAME, "Version")),
 	args = {
 		group1 = {
 			type = "group", order = 1,
@@ -89,8 +84,8 @@ local options = {
 					type = "range", order = 3,
 					width = "double", descStyle = "",
 					name = L.ZOOM_SPEED,
-					get = function(i) return tonumber(GetCVar("cameraDistanceMoveSpeed")) end,
-					set = function(i, v) db.speed = v; SetCVar("cameraDistanceMoveSpeed", v) end,
+					get = function(i) return tonumber(GetCVar("cameraZoomSpeed")) end,
+					set = function(i, v) db.speed = v; SetCVar("cameraZoomSpeed", v) end,
 					min = 1, max = 50, step = 1,
 				},
 				spacing2 = {type = "description", order = 4, name = "\n"},
@@ -98,17 +93,9 @@ local options = {
 					type = "range", order = 5,
 					width = "double", desc = OPTION_TOOLTIP_MAX_FOLLOW_DIST,
 					name = MAX_FOLLOW_DIST,
-					get = function(i) return GetCVar("cameraDistanceMaxFactor") * base end,
-					set = function(i, v)
-						local value = v / base
-						db.distance = value
-						SetCVar("cameraDistanceMaxFactor", value)
-						if InterfaceOptionsFrame:IsShown() then
-							InterfaceOptionsCameraPanelMaxDistanceSlider:SetValue(value)
-						end
-					end,
-					-- cameraDistanceMaxFactor gets rounded to 1 decimal
-					min = base, max = base * maxfactor, step = 1.5,
+					get = function(i) return GetCVar("cameraDistanceMaxZoomFactor") * base end,
+					set = function(i, v) db.distance = v / base; SetCVar("cameraDistanceMaxZoomFactor", v / base) end,
+					min = base, max = base * maxfactor, step = 1.5, -- cvar gets rounded to 1 decimal
 				},
 			},
 		},
@@ -136,12 +123,8 @@ function f:OnEvent(event, addon)
 		C_Timer.After(1, function()
 			-- not actually necessary to override from savedvars
 			-- but better to do this if other addons also set it
-			SetCVar("cameraDistanceMaxFactor", db.distance)
-			SetCVar("cameraDistanceMoveSpeed", db.speed)
-		end)
-		
-		InterfaceOptionsCameraPanelMaxDistanceSlider:HookScript("OnValueChanged", function(self, value)
-			db.distance = value
+			SetCVar("cameraDistanceMaxZoomFactor", db.distance)
+			SetCVar("cameraZoomSpeed", db.speed)
 		end)
 		
 		self:UnregisterEvent(event)
@@ -151,7 +134,7 @@ end
 f:RegisterEvent("ADDON_LOADED")
 f:SetScript("OnEvent", f.OnEvent)
 
-local function ShowDistance()
+local function UpdateDistanceACD() -- AceGUI distance
 	ACR:NotifyChange(NAME) -- hide that initial flicker
 	C_Timer.NewTicker(.5, function(self)
 		if ACD.OpenFrames.MaxCam then
@@ -164,14 +147,36 @@ local function ShowDistance()
 	end)
 end
 
+local PanelTicker
+
+local function UpdateDistancePanel() -- InterfaceOptionsFrame distance
+	local panel = InterfaceOptionsFramePanelContainer.displayedPanel
+	if panel.name == NAME and not PanelTicker then
+		PanelTicker = C_Timer.NewTicker(.5, function(self)
+			if panel:IsVisible() and panel.name == NAME then
+				if not panel:IsMouseOver() and not GetCurrentKeyBoardFocus() then
+					panel:Hide()
+					panel:Show() -- refresh
+				end
+			else
+				self:Cancel()
+				PanelTicker = nil
+			end
+		end)
+	end
+end
+
+hooksecurefunc("InterfaceOptionsList_DisplayPanel", UpdateDistancePanel) -- navigating to MaxCam panel
+InterfaceOptionsFrame:HookScript("OnShow", UpdateDistancePanel) -- opening straight to MaxCam panel
+
 for i, v in pairs({"mc", "maxcam"}) do
 	_G["SLASH_MAXCAM"..i] = "/"..v
 end
 
 function SlashCmdList.MAXCAM()
-	if not ACD.OpenFrames.MaxCam  then
+	if not ACD.OpenFrames.MaxCam then
 		ACD:Open(NAME)
-		ShowDistance()
+		UpdateDistanceACD()
 	end
 end
 
@@ -180,11 +185,11 @@ local dataobject = {
 	icon = "Interface\\Icons\\inv_misc_spyglass_03",
 	text = NAME,
 	OnClick = function()
-		if ACD.OpenFrames.MaxCam  then
+		if ACD.OpenFrames.MaxCam then
 			ACD:Close(NAME)
 		else
 			ACD:Open(NAME)
-			ShowDistance()
+			UpdateDistanceACD()
 		end
 	end,
 	OnTooltipShow = function(tt)
