@@ -118,7 +118,7 @@ function f:OnEvent(event, addon)
 		
 		ACR:RegisterOptionsTable(NAME, options)
 		ACD:AddToBlizOptions(NAME, NAME)
-		ACD:SetDefaultSize(NAME, 420, 320)
+		ACD:SetDefaultSize(NAME, 420, 330)
 		
 		C_Timer.After(1, function()
 			-- not actually necessary to override from savedvars

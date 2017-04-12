@@ -29,6 +29,9 @@ local L = {
 		ZOOM_SPEED = "Zoom Velocidade",
 	},
 	ruRU = {
+		DISTANCE = "Дистанция",
+		ZOOM_INCREMENT = "Шаг увеличения",
+		ZOOM_SPEED = "Скорость увеличения",
 	},
 	zhCN = {
 		DISTANCE = "距离",
