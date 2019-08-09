@@ -6,8 +6,7 @@
 ## SavedVariables: MaxCamDB
 ## OptionalDeps: Ace3
 ## X-Embeds: Ace3
-## X-Curse-Project-ID: 101438
-## X-WoWI-ID: 24111
+## X-WoWI-ID: 24927
 
 #@no-lib-strip@
 Libs\LibStub\LibStub.lua
