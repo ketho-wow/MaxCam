@@ -145,7 +145,7 @@ f:SetScript("OnEvent", f.OnEvent)
 
 local function UpdateDistanceACD() -- AceGUI distance
 	ACR:NotifyChange(NAME) -- hide that initial flicker
-	C_Timer.NewTicker(.5, function(self)
+	C_Timer.NewTicker(.3, function(self)
 		if ACD.OpenFrames.MaxCam then
 			if not ACD.OpenFrames.MaxCam.frame:IsMouseOver() and not GetCurrentKeyBoardFocus() then
 				ACR:NotifyChange(NAME)
@@ -161,7 +161,7 @@ local PanelTicker
 local function UpdateDistancePanel() -- InterfaceOptionsFrame distance
 	local panel = InterfaceOptionsFramePanelContainer.displayedPanel
 	if panel.name == NAME and not PanelTicker then
-		PanelTicker = C_Timer.NewTicker(.5, function(self)
+		PanelTicker = C_Timer.NewTicker(.3, function(self)
 			if panel:IsVisible() and panel.name == NAME then
 				if not panel:IsMouseOver() and not GetCurrentKeyBoardFocus() then
 					panel:Hide()
