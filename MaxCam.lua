@@ -1,9 +1,3 @@
-if IsAddOnLoaded("FasterCamera") then
-	print("FasterCamera is already loaded, disabling MaxCam...")
-	DisableAddOn("MaxCam", true)
-	return
-end
-
 local NAME, S = ...
 local L = S.L
 
@@ -11,7 +5,6 @@ local ACR = LibStub("AceConfigRegistry-3.0")
 local ACD = LibStub("AceConfigDialog-3.0")
 local db
 
-local tocversion = select(4, GetBuildInfo())
 local isClassic = (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC)
 
 local BASE = 15
@@ -23,7 +16,7 @@ local defaults = {
 	increment = 4,
 	speed = 20,
 	distance = isClassic and 3.34 or 2.6,
-	
+
 	nearDistance = 5,
 	nearIncrement = 1,
 }
@@ -49,18 +42,6 @@ end
 
 function CameraZoomOut(v)
 	CameraZoom(oldZoomOut, v)
-end
-
--- multi-passenger mounts / quest vehicles
-local oldVehicleZoomIn = VehicleCameraZoomIn
-local oldVehicleZoomOut = VehicleCameraZoomOut
-
-function VehicleCameraZoomIn(v)
-	CameraZoom(oldVehicleZoomIn, v)
-end
-
-function VehicleCameraZoomOut(v)
-	CameraZoom(oldVehicleZoomOut, v)
 end
 
 local options = {
@@ -124,18 +105,18 @@ function f:OnEvent(event, addon)
 			MaxCamDB = CopyTable(defaults)
 		end
 		db = MaxCamDB
-		
+
 		ACR:RegisterOptionsTable(NAME, options)
 		ACD:AddToBlizOptions(NAME, NAME)
 		ACD:SetDefaultSize(NAME, 420, 330)
-		
+
 		C_Timer.After(1, function()
 			-- not actually necessary to override from savedvars
 			-- but better to do this if other addons also set it
 			SetCVar("cameraDistanceMaxZoomFactor", db.distance)
 			SetCVar("cameraZoomSpeed", db.speed)
 		end)
-		
+
 		self:UnregisterEvent(event)
 	end
 end
