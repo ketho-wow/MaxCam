@@ -5,7 +5,7 @@ local ACR = LibStub("AceConfigRegistry-3.0")
 local ACD = LibStub("AceConfigDialog-3.0")
 local db
 
-local isClassic = (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC)
+local isRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
 
 local BASE = 15
 local MAX_RETAIL = 39
@@ -15,7 +15,7 @@ local defaults = {
 	db_version = 2.3,
 	increment = 4,
 	speed = 20,
-	distance = isClassic and 3.34 or 2.6,
+	distance = isRetail and 2.6 or 3.34,
 
 	nearDistance = 5,
 	nearIncrement = 1,
@@ -84,8 +84,8 @@ local options = {
 						SetCVar("cameraDistanceMaxZoomFactor", db.distance)
 					end,
 					min = BASE,
-					max = isClassic and MAX_CLASSIC or MAX_RETAIL,
-					step = isClassic and 1 or 1.5,
+					max = isRetail and MAX_RETAIL or MAX_CLASSIC,
+					step = isRetail and 1.5 or 1,
 				},
 			},
 		},

@@ -1,0 +1,16 @@
+{
+	"Lua.diagnostics.globals": [
+		"InterfaceOptionsFrame",
+		"InterfaceOptionsFramePanelContainer",
+		"LibStub",
+		"MAX_FOLLOW_DIST",
+		"OPTION_TOOLTIP_MAX_FOLLOW_DIST",
+		"SlashCmdList",
+		"SPEED",
+		"WOW_PROJECT_ID",
+		"WOW_PROJECT_MAINLINE"
+	],
+	"Lua.diagnostics.disable": [
+		"undefined-field"
+	]
+}

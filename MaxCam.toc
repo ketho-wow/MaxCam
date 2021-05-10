@@ -1,16 +1,12 @@
-#@retail@
-## Interface: 90001
-#@end-retail@
-#@non-retail@
-# ## Interface: 11305
-#@end-non-retail@
+## Interface-Retail: 90005
+## Interface-Classic: 11307
+## Interface-BC: 20501
 ## Version: @project-version@
 ## Title: MaxCam
 ## Notes: Max Camera
 ## Author: Ketho @ EU-Boulderfist
 ## SavedVariables: MaxCamDB
 ## OptionalDeps: Ace3
-## X-Embeds: Ace3
 ## X-Curse-Project-ID: 101438
 ## X-WoWI-ID: 24111
 
