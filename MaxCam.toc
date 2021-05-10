@@ -3,7 +3,7 @@
 ## Interface-BC: 20501
 ## Version: @project-version@
 ## Title: MaxCam
-## Notes: Max Camera
+## Notes: Max Camera Distance
 ## Author: Ketho @ EU-Boulderfist
 ## SavedVariables: MaxCamDB
 ## OptionalDeps: Ace3
