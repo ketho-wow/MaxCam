@@ -10,7 +10,4 @@
 		"WOW_PROJECT_ID",
 		"WOW_PROJECT_MAINLINE"
 	],
-	"Lua.diagnostics.disable": [
-		"undefined-field"
-	]
 }

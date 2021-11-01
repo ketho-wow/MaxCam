@@ -1,0 +1,22 @@
+## Interface: 90100
+## Version: @project-version@
+## Title: MaxCam
+## Notes: Max Camera Distance
+## Author: Ketho @ EU-Boulderfist
+## SavedVariables: MaxCamDB
+## OptionalDeps: Ace3
+## X-Curse-Project-ID: 101438
+## X-WoWI-ID: 24111
+## X-Wago-ID: R4N2vVNL
+
+#@no-lib-strip@
+Libs\LibStub\LibStub.lua
+Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
+Libs\AceGUI-3.0\AceGUI-3.0.xml
+Libs\AceConfig-3.0\AceConfig-3.0.xml
+#@end-no-lib-strip@
+
+Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
+
+Locales.lua
+MaxCam.lua
