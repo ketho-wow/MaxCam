@@ -17,4 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
+      - name: Setup build
+        run: cp MaxCam_Mainline.toc MaxCam.toc
+
       - uses: BigWigsMods/packager@master
