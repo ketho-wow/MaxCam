@@ -12,11 +12,9 @@ local MAX_RETAIL = 39
 local MAX_CLASSIC = 50
 
 local defaults = {
-	db_version = 2.3,
 	increment = 4,
 	speed = 20,
 	distance = isRetail and 2.6 or 3.34,
-
 	nearDistance = 5,
 	nearIncrement = 1,
 }
@@ -101,10 +99,13 @@ local f = CreateFrame("Frame")
 
 function f:OnEvent(event, addon)
 	if addon == NAME then
-		if not MaxCamDB or MaxCamDB.db_version < defaults.db_version then
-			MaxCamDB = CopyTable(defaults)
-		end
+		MaxCamDB = MaxCamDB or {}
 		db = MaxCamDB
+		for k, v in pairs(defaults) do
+			if db[k] == nil then
+				db[k] = v
+			end
+		end
 
 		ACR:RegisterOptionsTable(NAME, options)
 		ACD:AddToBlizOptions(NAME, NAME)

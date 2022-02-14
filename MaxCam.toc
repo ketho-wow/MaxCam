@@ -1,4 +1,6 @@
-## Interface: 90100
+## Interface-Retail: 90200
+## Interface-Classic: 11402
+## Interface-BCC: 20503
 ## Version: @project-version@
 ## Title: MaxCam
 ## Notes: Max Camera Distance

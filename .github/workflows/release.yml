@@ -18,3 +18,11 @@ jobs:
       - uses: actions/checkout@v1
 
       - uses: BigWigsMods/packager@master
+        with:
+          args: -g classic
+
+      - uses: BigWigsMods/packager@master
+        with:
+          args: -g bcc
+
+      - uses: BigWigsMods/packager@master
