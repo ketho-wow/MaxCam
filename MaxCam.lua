@@ -157,8 +157,10 @@ local function UpdateDistancePanel() -- InterfaceOptionsFrame distance
 	end
 end
 
-hooksecurefunc("InterfaceOptionsList_DisplayPanel", UpdateDistancePanel) -- navigating to MaxCam panel
-InterfaceOptionsFrame:HookScript("OnShow", UpdateDistancePanel) -- opening straight to MaxCam panel
+if not isRetail then
+	hooksecurefunc("InterfaceOptionsList_DisplayPanel", UpdateDistancePanel) -- navigating to MaxCam panel
+	InterfaceOptionsFrame:HookScript("OnShow", UpdateDistancePanel) -- opening straight to MaxCam panel
+end
 
 for i, v in pairs({"mc", "maxcam"}) do
 	_G["SLASH_MAXCAM"..i] = "/"..v
