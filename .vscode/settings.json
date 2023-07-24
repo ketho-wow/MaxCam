@@ -8,6 +8,30 @@
 		"SlashCmdList",
 		"SPEED",
 		"WOW_PROJECT_ID",
-		"WOW_PROJECT_MAINLINE"
+		"WOW_PROJECT_MAINLINE",
+		"CreateFrame",
+		"hooksecurefunc",
+		"format",
+		"C_Timer",
+		"GetAddOnMetadata",
+		"GetCameraZoom",
+		"SetCVar",
+		"GetCurrentKeyBoardFocus",
+		"min",
+		"GetCVar",
+		"GetLocale",
+		"GameTooltip",
+		"_G",
+		"C_AddOns",
+		"pairs",
+		"tonumber",
+		"InterfaceOptions_AddCategory",
+		"InterfaceOptionsFrame_OpenToCategory",
+		"SettingsPanel",
+		"GameFontNormalLarge",
+		"GameFontHighlightSmall"
+	],
+	"Lua.diagnostics.disable": [
+		"need-check-nil"
 	],
 }

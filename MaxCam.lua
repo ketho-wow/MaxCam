@@ -6,6 +6,7 @@ local ACD = LibStub("AceConfigDialog-3.0")
 local db
 
 local isRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
+local GetAddOnMetadata = GetAddOnMetadata or C_AddOns.GetAddOnMetadata
 
 local BASE = 15
 local MAX_RETAIL = 39
@@ -142,7 +143,7 @@ local PanelTicker
 
 local function UpdateDistancePanel() -- InterfaceOptionsFrame distance
 	local panel = InterfaceOptionsFramePanelContainer.displayedPanel
-	if panel.name == NAME and not PanelTicker then
+	if panel and panel.name == NAME and not PanelTicker then
 		PanelTicker = C_Timer.NewTicker(.3, function(self)
 			if panel:IsVisible() and panel.name == NAME then
 				if not panel:IsMouseOver() and not GetCurrentKeyBoardFocus() then
