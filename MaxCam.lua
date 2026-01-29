@@ -6,7 +6,6 @@ local ACD = LibStub("AceConfigDialog-3.0")
 local db
 
 local isRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
-local GetAddOnMetadata = GetAddOnMetadata or C_AddOns.GetAddOnMetadata
 
 local BASE = 15
 local MAX_RETAIL = 39
@@ -45,7 +44,7 @@ end
 
 local options = {
 	type = "group",
-	name = format("%s |cffADFF2F%s|r", NAME, GetAddOnMetadata(NAME, "Version")),
+	name = format("%s |cffADFF2F%s|r", NAME, C_AddOns.GetAddOnMetadata(NAME, "Version")),
 	args = {
 		group1 = {
 			type = "group", order = 1,
