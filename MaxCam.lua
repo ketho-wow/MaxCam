@@ -157,7 +157,11 @@ local function UpdateDistancePanel() -- InterfaceOptionsFrame distance
 	end
 end
 
-if not isRetail then
+if not isRetail
+	and InterfaceOptionsList_DisplayPanel
+	and InterfaceOptionsFrame
+	and InterfaceOptionsFramePanelContainer
+then
 	hooksecurefunc("InterfaceOptionsList_DisplayPanel", UpdateDistancePanel) -- navigating to MaxCam panel
 	InterfaceOptionsFrame:HookScript("OnShow", UpdateDistancePanel) -- opening straight to MaxCam panel
 end
