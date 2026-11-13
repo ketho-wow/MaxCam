@@ -5,7 +5,7 @@
 ## Author: Ketho @ EU-Boulderfist
 ## SavedVariables: MaxCamDB
 ## OptionalDeps: Ace3
-## IconTexture: 1109101
+## IconTexture: 134442
 ## X-Curse-Project-ID: 101438
 ## X-WoWI-ID: 24111
 ## X-Wago-ID: R4N2vVNL
