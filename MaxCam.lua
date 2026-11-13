@@ -9,7 +9,7 @@ local isRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
 
 local BASE = 15
 local MAX_RETAIL = 39
-local MAX_CLASSIC = 50
+local MAX_CLASSIC_FOREVER = 50
 
 local defaults = {
 	increment = 4,
@@ -76,13 +76,13 @@ local options = {
 					type = "range", order = 5,
 					width = "double", desc = OPTION_TOOLTIP_MAX_FOLLOW_DIST,
 					name = MAX_FOLLOW_DIST,
-					get = function(i) return min(MAX_CLASSIC, tonumber(C_CVar.GetCVar("cameraDistanceMaxZoomFactor")) * BASE) end,
+					get = function(i) return min(MAX_CLASSIC_FOREVER, tonumber(C_CVar.GetCVar("cameraDistanceMaxZoomFactor")) * BASE) end,
 					set = function(i, v)
 						db.distance = v / BASE
 						C_CVar.SetCVar("cameraDistanceMaxZoomFactor", db.distance)
 					end,
 					min = BASE,
-					max = isRetail and MAX_RETAIL or MAX_CLASSIC,
+					max = isRetail and MAX_RETAIL or MAX_CLASSIC_FOREVER,
 					step = isRetail and 1.5 or 1,
 				},
 			},
@@ -140,15 +140,22 @@ end
 f:RegisterEvent("ADDON_LOADED")
 f:SetScript("OnEvent", f.OnEvent)
 
+local windowTicker
+
 local function UpdateDistanceACD() -- AceGUI distance
 	ACR:NotifyChange(NAME) -- hide that initial flicker
-	C_Timer.NewTicker(.3, function(self)
+	-- Reopening before the next tick must not create another updater.
+	if windowTicker then
+		return
+	end
+	windowTicker = C_Timer.NewTicker(.3, function(self)
 		if ACD.OpenFrames.MaxCam then
 			if not ACD.OpenFrames.MaxCam.frame:IsMouseOver() and not GetCurrentKeyBoardFocus() then
 				ACR:NotifyChange(NAME)
 			end
 		else
 			self:Cancel()
+			windowTicker = nil
 		end
 	end)
 end
@@ -166,8 +173,8 @@ end
 
 local dataobject = {
 	type = "launcher",
-	icon = "Interface\\Icons\\inv_misc_spyglass_03",
-	text = NAME,
+	icon = 134442, -- inv_misc_spyglass_03; avoid legacy texture path lookup
+	label = NAME,
 	OnClick = function()
 		if ACD.OpenFrames.MaxCam then
 			ACD:Close(NAME)
