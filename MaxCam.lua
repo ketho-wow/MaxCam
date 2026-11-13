@@ -9,7 +9,7 @@ local isRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
 
 local BASE = 15
 local MAX_RETAIL = 39
-local MAX_CLASSIC = 50
+local MAX_CLASSIC_FOREVER = 50
 
 local defaults = {
 	increment = 4,
@@ -64,10 +64,10 @@ local options = {
 					type = "range", order = 3,
 					width = "double", descStyle = "",
 					name = L.ZOOM_SPEED,
-					get = function(i) return tonumber(GetCVar("cameraZoomSpeed")) end,
+					get = function(i) return tonumber(C_CVar.GetCVar("cameraZoomSpeed")) end,
 					set = function(i, v)
 						db.speed = v
-						SetCVar("cameraZoomSpeed", db.speed)
+						C_CVar.SetCVar("cameraZoomSpeed", db.speed)
 					end,
 					min = 1, max = 50, step = 1,
 				},
@@ -76,13 +76,13 @@ local options = {
 					type = "range", order = 5,
 					width = "double", desc = OPTION_TOOLTIP_MAX_FOLLOW_DIST,
 					name = MAX_FOLLOW_DIST,
-					get = function(i) return min(MAX_CLASSIC, GetCVar("cameraDistanceMaxZoomFactor") * BASE) end,
+					get = function(i) return min(MAX_CLASSIC_FOREVER, tonumber(C_CVar.GetCVar("cameraDistanceMaxZoomFactor")) * BASE) end,
 					set = function(i, v)
 						db.distance = v / BASE
-						SetCVar("cameraDistanceMaxZoomFactor", db.distance)
+						C_CVar.SetCVar("cameraDistanceMaxZoomFactor", db.distance)
 					end,
 					min = BASE,
-					max = isRetail and MAX_RETAIL or MAX_CLASSIC,
+					max = isRetail and MAX_RETAIL or MAX_CLASSIC_FOREVER,
 					step = isRetail and 1.5 or 1,
 				},
 			},
@@ -108,14 +108,29 @@ function f:OnEvent(event, addon)
 		end
 
 		ACR:RegisterOptionsTable(NAME, options)
-		ACD:AddToBlizOptions(NAME, NAME)
+		local panel = ACD:AddToBlizOptions(NAME, NAME)
+		local panelTicker
+		-- Refresh the registered panel; modern clients have no InterfaceOptionsFrame.
+		panel:HookScript("OnShow", function()
+			panelTicker = C_Timer.NewTicker(.3, function()
+				if not panel:IsMouseOver() and not GetCurrentKeyBoardFocus() then
+					ACR:NotifyChange(NAME)
+				end
+			end)
+		end)
+		panel:HookScript("OnHide", function()
+			if panelTicker then
+				panelTicker:Cancel()
+				panelTicker = nil
+			end
+		end)
 		ACD:SetDefaultSize(NAME, 420, 330)
 
 		C_Timer.After(1, function()
 			-- not actually necessary to override from savedvars
 			-- but better to do this if other addons also set it
-			SetCVar("cameraDistanceMaxZoomFactor", db.distance)
-			SetCVar("cameraZoomSpeed", db.speed)
+			C_CVar.SetCVar("cameraDistanceMaxZoomFactor", db.distance)
+			C_CVar.SetCVar("cameraZoomSpeed", db.speed)
 		end)
 
 		self:UnregisterEvent(event)
@@ -125,41 +140,24 @@ end
 f:RegisterEvent("ADDON_LOADED")
 f:SetScript("OnEvent", f.OnEvent)
 
+local windowTicker
+
 local function UpdateDistanceACD() -- AceGUI distance
 	ACR:NotifyChange(NAME) -- hide that initial flicker
-	C_Timer.NewTicker(.3, function(self)
+	-- Reopening before the next tick must not create another updater.
+	if windowTicker then
+		return
+	end
+	windowTicker = C_Timer.NewTicker(.3, function(self)
 		if ACD.OpenFrames.MaxCam then
 			if not ACD.OpenFrames.MaxCam.frame:IsMouseOver() and not GetCurrentKeyBoardFocus() then
 				ACR:NotifyChange(NAME)
 			end
 		else
 			self:Cancel()
+			windowTicker = nil
 		end
 	end)
-end
-
-local PanelTicker
-
-local function UpdateDistancePanel() -- InterfaceOptionsFrame distance
-	local panel = InterfaceOptionsFramePanelContainer.displayedPanel
-	if panel and panel.name == NAME and not PanelTicker then
-		PanelTicker = C_Timer.NewTicker(.3, function(self)
-			if panel:IsVisible() and panel.name == NAME then
-				if not panel:IsMouseOver() and not GetCurrentKeyBoardFocus() then
-					panel:Hide()
-					panel:Show() -- refresh
-				end
-			else
-				self:Cancel()
-				PanelTicker = nil
-			end
-		end)
-	end
-end
-
-if not isRetail then
-	hooksecurefunc("InterfaceOptionsList_DisplayPanel", UpdateDistancePanel) -- navigating to MaxCam panel
-	InterfaceOptionsFrame:HookScript("OnShow", UpdateDistancePanel) -- opening straight to MaxCam panel
 end
 
 for i, v in pairs({"mc", "maxcam"}) do
@@ -175,8 +173,8 @@ end
 
 local dataobject = {
 	type = "launcher",
-	icon = "Interface\\Icons\\inv_misc_spyglass_03",
-	text = NAME,
+	icon = 134442, -- inv_misc_spyglass_03; avoid legacy texture path lookup
+	label = NAME,
 	OnClick = function()
 		if ACD.OpenFrames.MaxCam then
 			ACD:Close(NAME)
