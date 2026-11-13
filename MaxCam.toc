@@ -1,4 +1,4 @@
-## Interface: 120105, 120001, 120000, 50504, 50503, 20505, 11508, 16001
+## Interface: 120105, 120001, 120000, 50504, 50503, 20506, 20505, 11509, 11508, 16001
 ## Version: @project-version@
 ## Title: MaxCam
 ## Notes: Max Camera Distance
